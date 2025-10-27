@@ -1,7 +1,12 @@
 {
+  // "files": tells TypeScript which individual files to include.
+  // It's empty here because we're using "references" to point to other configs.
   "files": [],
+
+  // "references": allows this main tsconfig to reference multiple sub-configs.
+  // This setup is created by Vite for cleaner separation of client and build settings.
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./tsconfig.app.json" },  // config for the React app (frontend code)
+    { "path": "./tsconfig.node.json" }  // config for Node/Vite-related build tools
   ]
 }

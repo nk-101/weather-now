@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# 🌤️ Weather Now
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Weather Now** is a simple and responsive weather application built with **React (Vite + TypeScript)** and **Tailwind CSS**, using the **Open-Meteo API** to fetch real-time weather data for any city.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🧠 Overview
 
-## React Compiler
+This project was created to fulfill a user requirement:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+> _Jamie, an outdoor enthusiast, wants to quickly check current weather conditions for any city._
 
-## Expanding the ESLint configuration
+The app provides:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 🌍 City search (with geocoding)
+- 🌡️ Real-time temperature
+- 💨 Wind speed
+- 🌦️ Weather conditions with emojis
+- 🧱 Clean, responsive Tailwind UI
+- ⚙️ Deployed on Vercel (free hosting)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## ⚙️ Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Tool                          | Purpose                         |
+| ----------------------------- | ------------------------------- |
+| **React (Vite + TypeScript)** | Frontend framework & build tool |
+| **Tailwind CSS**              | Styling                         |
+| **Open-Meteo API**            | Free weather & geocoding data   |
+| **Vercel**                    | Deployment platform             |
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📁 Folder Structure

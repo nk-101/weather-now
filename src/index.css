@@ -1,3 +1,8 @@
+/* Injects Tailwind’s base styles (resets, typography, etc.) */
 @tailwind base;
+
+/* Includes reusable component classes (buttons, cards, forms, etc.) */
 @tailwind components;
+
+/* Adds all utility classes (margins, colors, flex, grid, etc.) */
 @tailwind utilities;
