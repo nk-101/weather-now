@@ -1,107 +1,93 @@
+## 🌤️ Weather Now
+
+Weather Now is a lightweight and responsive weather web app built using React (Vite + TypeScript), styled with Tailwind CSS, and powered by the Open-Meteo API. It allows Jamie, an outdoor enthusiast, to quickly check real-time weather conditions for any city and get AI-based insights on what to expect — for example, “Should I carry an umbrella today?” ☔
+
 ## 🧠 Overview
 
-This project was built to fulfill a real-world user requirement:
-
-Jamie, an outdoor enthusiast, wants to quickly check current weather conditions for any city.
-
-The app allows Jamie to:
-
-🌍 Search for any city (geocoded automatically)
-
-🌡️ View current temperature and conditions
-
-💨 See wind speed and status
-
-🤖 Ask AI-style questions like “Should I carry an umbrella?” or “What should I wear today?”
-
-📱 Use it on both desktop and mobile (responsive Tailwind UI)
-
-🚀 Experience fast performance thanks to Vite + React
+The application helps users fetch current weather details, including temperature, wind speed, and conditions, using the Open-Meteo API.
+It also integrates Google Gemini (LLM) to provide natural language responses to weather-related questions, creating an interactive, AI-assisted experience.
 
 ## ⚙️ Tech Stack
 
-Tool / Library Purpose
-React (Vite + TypeScript) Frontend framework & build tool
-Tailwind CSS Styling and responsive design
-Open-Meteo API Free weather and geocoding data
-Vercel Deployment platform (serverless hosting)
-Serverless API (Node) AI / rule-based chat responses
+React (Vite + TypeScript) - Frontend framework & development tool
 
-## 🧩 Features
+Tailwind CSS - Styling and responsive design
 
-Instant city search — Get results even if the spelling is slightly off.
+Open-Meteo API - Real-time weather and geocoding data
 
-Accurate weather data — Temperature, wind, and condition codes from Open-Meteo.
+Google Gemini API - LLM for conversational weather assistance
 
-Emoji-based weather display 🌦️☀️❄️
+Vercel - Free hosting and deployment
 
-AI Weather Assistant (Fallback Mode)
+## ✨ Features
 
-Gives intelligent, human-like advice about rain, clothing, or outdoor plans.
+🌍 City-based search with geocoding
 
-Works locally with no external API dependency.
+🌦️ Real-time weather (temperature, wind, condition)
 
-Easily replaceable with OpenAI, Cohere, or Hugging Face integration in the future.
+💬 AI Weather Chat (LLM) — ask natural questions like “Will it rain tonight?”
 
-Deployed on Vercel — Free, fast, and scalable.
+📱 Responsive UI using Tailwind CSS
+
+⚙️ Error handling for invalid cities or network issues
 
 ## 📁 Folder Structure
 
 weather-now/
+├── public/
 ├── src/
-│ ├── WeatherNowApp.tsx # Main UI component
-│ ├── WeatherChat.tsx # AI chat interface
-│ ├── index.css # Tailwind styles
-│ └── main.tsx # App entry point
+│ ├── WeatherNowApp.tsx # Main weather app component
+│ ├── WeatherChat.tsx # Chat UI component for LLM
+│ ├── index.css # Tailwind base styles
+│ ├── main.tsx # React entry point
+│ └── ...
 ├── api/
 │ └── ai/
-│ └── index.js # Serverless AI logic (rule-based)
-├── public/
-│ └── icons, manifest, etc.
-└── vite.config.ts
+│ └── index.js # Gemini API integration (LLM)
+├── package.json
+├── tailwind.config.js
+└── .env.local # Environment variables (API keys)
 
-## 🧠 AI / Assistant Logic
+## 🤖 AI Feature (Gemini Integration)
 
-The app includes a lightweight, local rule-based AI assistant that:
+The AI assistant uses Google’s Gemini 2.5 Pro/Flash model via the Generative Language API.
+It analyzes weather context (city, temperature, wind, and condition) and answers user questions in natural language.
 
-Responds contextually to weather data and user queries.
+Example interaction:
 
-Suggests actions like carrying an umbrella, clothing advice, or outdoor suitability.
-
-Does not require API keys or internet access beyond Open-Meteo.
-
-Can later be upgraded to a true LLM-powered assistant (OpenAI, Cohere, or Hugging Face).
+User: “Will it rain tonight in Pune?”
+Gemini: “It’s cloudy but rain isn’t expected — keep a light umbrella just in case.”
 
 ## 🚀 Deployment
 
-This project is deployed on Vercel.
+Deployed on Vercel:
 
-1.Push changes to GitHub.
-2.Connect the repo on vercel.com
-3.Vercel auto-builds and deploys your site.
-4.Live link updates instantly after each push.
+Auto-build from GitHub
 
-## 🧪 Local Development
+Environment variables securely stored in Vercel
 
-# Clone and install
+Instant redeploy on code updates
+
+Production URL: (insert your live Vercel link here once deployed)
+
+## 🧩 Local Development
+
+1. Clone & install
 
 git clone https://github.com/nk-101/weather-now.git
 cd weather-now
 npm install
 
-# Start dev server
+2. Set environment variables
+   Create .env.local file in project root:
 
-npm run dev
+GEMINI_API_KEY= the_secret_key
 
-Visit http://localhost:5173
-in your browser.
+3.Run app locally
 
-## 💬 Future Enhancements
+vercel dev
+Visit: http://localhost:3000
 
-Integrate Cohere / OpenAI Chat API for natural LLM-powered answers.
+4. Build for production
 
-Add weather forecast (next 3 days).
-
-Include dark/light theme toggle.
-
-Improve chat history persistence.
+npm run build

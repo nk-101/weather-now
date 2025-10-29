@@ -1,96 +1,46 @@
-// api/ai/index.js
-// Vercel serverless function for AI chat using OpenAI API
-/* open ai:
+//gemini
+// 🌤️ api/ai/index.js
+// ------------------------------------------------------------
+// Gemini API integration for Weather Now
+// ------------------------------------------------------------
+// This serverless function handles AI-powered weather insights
+// using Google's Gemini models via the Generative Language API.
+//
+// ✅ Features:
+//  - Uses environment variable GEMINI_API_KEY (secure, hidden)
+//  - Builds a dynamic weather-related prompt
+//  - Tries multiple Gemini models (2.5 & 2.0) with fallback
+//  - Returns concise natural language responses
+// ------------------------------------------------------------
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
+  // 🛑 Restrict to POST requests only
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    res.status(500).json({ error: "API key missing in environment variables." });
-    return;
-  }
+  // 🔑 Load Gemini API key from environment variables
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey)
+    return res
+      .status(500)
+      .json({ error: "GEMINI_API_KEY missing in environment variables." });
 
+  // 🧠 Extract user input data (city, weather, question)
+  const { place, weather, question } = req.body || {};
 
+  // 📍 Handle missing values gracefully
+  const placeName = place?.name || "the location";
+  const country = place?.country ? `, ${place.country}` : "";
+  const temp =
+    weather?.temperature != null ? `${weather.temperature}°C` : "unknown";
+  const wind =
+    weather?.windspeed != null ? `${weather.windspeed} km/h` : "unknown";
+  const conditionCode = weather?.weathercode ?? "N/A";
 
-  try {
-    const { place, weather, question } = req.body;
-
-    const placeName = place?.name || "the location";
-    const country = place?.country ? `, ${place.country}` : "";
-    const temp = weather?.temperature != null ? `${weather.temperature}°C` : "unknown";
-    const wind = weather?.windspeed != null ? `${weather.windspeed} km/h` : "unknown";
-
-    const systemPrompt =
-      "You are a helpful, friendly weather assistant. Keep answers short and practical.";
-
-    const userPrompt = `City: ${placeName}${country}
-Temperature: ${temp}
-Wind: ${wind}
-Condition code: ${weather?.weathercode ?? "N/A"}
-Question: ${question}`;
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: 120,
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await response.json();
-    const answer = data?.choices?.[0]?.message?.content || "Sorry, I couldn't respond.";
-
-    res.status(200).json({ answer });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-}
-*/
-// hugging face:
-
-// api/ai/index.js  (Hugging Face inference API version)
-// Uses HF_API_KEY from environment variables
-// api/ai/index.js
-
-
-
-// api/ai/index.js
-/*
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
-
-  const hfKey = process.env.HF_API_KEY;
-  console.log("DEBUG: HF key present?", !!hfKey);
-  if (!hfKey) {
-    res.status(500).json({ error: "HF_API_KEY missing in environment variables." });
-    return;
-  }
-
-  try {
-    const { place, weather, question } = req.body || {};
-    const placeName = place?.name || "the location";
-    const country = place?.country ? `, ${place.country}` : "";
-    const temp = weather?.temperature != null ? `${weather.temperature}°C` : "unknown";
-    const wind = weather?.windspeed != null ? `${weather.windspeed} km/h` : "unknown";
-    const conditionCode = weather?.weathercode ?? "N/A";
-
-    const prompt = `You are a helpful weather assistant. Use the context below and answer concisely (one or two sentences), and give one practical suggestion if relevant.
+  // 📝 Construct the AI prompt
+  const prompt = `
+You are a concise, friendly weather assistant. 
+Answer in 1–2 sentences and add one practical tip if needed.
 
 Context:
 City: ${placeName}${country}
@@ -98,165 +48,71 @@ Temperature: ${temp}
 Wind: ${wind}
 Condition code: ${conditionCode}
 
-User question: ${question}
+User question: ${question || "Give a short summary of current conditions."}
+  `.trim();
 
-Answer:`;
+  // 🚀 Candidate Gemini models (from ListModels output)
+  // Tries each in sequence until one responds successfully
+  const candidates = [
+    "models/gemini-2.5-pro",
+    "models/gemini-2.5-flash",
+    "models/gemini-2.0-flash-001",
+    "models/gemini-2.0-flash",
+    "models/gemini-2.0-flash-lite-001",
+    "models/gemini-2.5-flash-lite",
+  ];
 
-    // Candidate models to try (order: more likely -> fallback)
-    const models = [
-      "gpt2",
-      "distilgpt2",
-      "sshleifer/tiny-gpt2",
-      // you can add more models here if you want
-    ];
+  let lastErr = null;
 
-    let lastError = null;
-    for (const model of models) {
-      const inferenceUrl = `https://api-inference.huggingface.co/models/${model}`;
-      try {
-        const resp = await fetch(inferenceUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${hfKey}`,
-            "Content-Type": "application/json",
+  // 🔁 Try each model sequentially until a valid response is received
+  for (const modelId of candidates) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1/${modelId}:generateContent?key=${apiKey}`;
+
+    try {
+      // 🌐 Make POST request to Gemini API
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.6, // controls creativity
+            maxOutputTokens: 120, // limits response length
           },
-          body: JSON.stringify({
-            inputs: prompt,
-            parameters: { max_new_tokens: 120, temperature: 0.6 },
-            options: { wait_for_model: true },
-          }),
-        });
+        }),
+      });
 
-        if (!resp.ok) {
-          const text = await resp.text();
-          console.warn(`HF model ${model} returned ${resp.status}: ${text.slice(0,200)}`);
-          lastError = { model, status: resp.status, detail: text };
-          // if 404 try next model; if other errors you may still try next but keep lastError
-          continue;
-        }
+      const text = await resp.text();
 
-        const data = await resp.json();
-        let answer = "";
-        if (Array.isArray(data)) {
-          answer = data[0]?.generated_text ?? JSON.stringify(data).slice(0,1000);
-        } else if (data.generated_text) {
-          answer = data.generated_text;
-        } else if (data?.[0]?.generated_text) {
-          answer = data[0].generated_text;
-        } else {
-          answer = JSON.stringify(data).slice(0,2000);
-        }
-
-        return res.status(200).json({ answer: answer.trim(), model });
-      } catch (err) {
-        console.error(`Error calling HF model ${model}:`, err);
-        lastError = { model, error: String(err) };
-        // try next model
+      // ❌ If API returned an error, log and try next model
+      if (!resp.ok) {
+        lastErr = { modelId, status: resp.status, detail: text };
+        continue;
       }
+
+      // ✅ Parse and extract AI-generated response
+      const data = JSON.parse(text);
+      const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (answer)
+        return res
+          .status(200)
+          .json({ answer: answer.trim(), model: modelId }); // return successful result
+
+      // Fallback if empty
+      lastErr = { modelId, status: resp.status, detail: text };
+    } catch (err) {
+      // 🧯 Catch unexpected network or parsing errors
+      lastErr = { modelId, error: String(err) };
     }
-
-    // If we reach here, all models failed
-    return res.status(502).json({
-      error: "HF inference error (all candidates failed)",
-      lastError,
-    });
-  } catch (err) {
-    console.error("Handler error:", err);
-    res.status(500).json({ error: "Internal server error", detail: String(err) });
   }
+
+  // ❗If all models fail, return diagnostic info
+  return res.status(502).json({ error: "All Gemini models failed", lastErr });
 }
-*/
 
-//cohere
-
-// api/ai/index.js
-// Cohere Chat API handler — expects COHERE_API_KEY in env
-
-// api/ai/index.js
-// Cohere Chat API handler — expects COHERE_API_KEY in env
-
+// manual code:used when api's were not working
 /*
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
-
-  const cohereKey = process.env.COHERE_API_KEY;
-  console.log("DEBUG: COHERE key present?", !!cohereKey);
-  if (!cohereKey) {
-    return res.status(500).json({ error: "COHERE_API_KEY missing in environment variables." });
-  }
-
-  try {
-    const { place, weather, question } = req.body || {};
-    const placeName = place?.name || "the location";
-    const country = place?.country ? `, ${place.country}` : "";
-    const temp = weather?.temperature != null ? `${weather.temperature}°C` : "unknown";
-    const wind = weather?.windspeed != null ? `${weather.windspeed} km/h` : "unknown";
-    const conditionCode = weather?.weathercode ?? "N/A";
-
-    const systemMessage = `You are a friendly, concise weather assistant. Answer in 1-2 sentences and give one practical tip if relevant.`;
-    // ensure question is non-empty string
-    const userQ = (question || "").trim() || "Give a short weather summary for the current conditions.";
-
-    const userMessage = `Context:
-City: ${placeName}${country}
-Temperature: ${temp}
-Wind: ${wind}
-Condition code: ${conditionCode}
-
-User question: ${userQ}`;
-
-    // Use the simpler content format (string) which is accepted by Cohere Chat v1
-    const body = {
-      model: "command",
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: userMessage }
-      ],
-      max_tokens: 120,
-      temperature: 0.7
-    };
-
-    console.log("DEBUG: Cohere request body preview:", JSON.stringify(body).slice(0, 800));
-
-    const resp = await fetch("https://api.cohere.com/v1/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${cohereKey}`,
-      },
-      body: JSON.stringify(body),
-    });
-
-    const text = await resp.text();
-    if (!resp.ok) {
-      console.error("Cohere API error:", resp.status, text);
-      return res.status(502).json({ error: "Cohere API error", status: resp.status, detail: text });
-    }
-
-    const data = JSON.parse(text);
-    // Try common shapes: data.message.content[0].text OR data.message.content[0] (string) OR data.generations...
-    const assistantText =
-      data?.message?.content?.[0]?.text ??
-      (typeof data?.message?.content?.[0] === "string" ? data.message.content[0] : null) ??
-      (data?.generations?.[0]?.text ?? null) ??
-      JSON.stringify(data).slice(0, 2000);
-
-    return res.status(200).json({ answer: assistantText.trim() });
-  } catch (err) {
-    console.error("Handler error:", err);
-    return res.status(500).json({ error: "Internal server error", detail: String(err) });
-  }
-}
-
-*/
-
-// api/ai/index.js
-// Local rule-based "assistant" fallback — no external LLM required.
-// Returns short, practical answers based on weather & question.
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -349,3 +205,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Internal server error", detail: String(err) });
   }
 }
+
+  */
