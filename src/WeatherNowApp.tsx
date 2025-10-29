@@ -1,4 +1,5 @@
 import { useState } from "react";
+import WeatherChat from "./WeatherChat";
 
 // -----------------------------
 // 🔹 Type Definitions
@@ -179,11 +180,18 @@ export default function WeatherNowApp() {
               {(WEATHER_MAP[weather.weathercode] || {}).label || ""}
             </p>
 
-            {/* Wind + Time */}
+                        {/* Wind + Time */}
             <p className="text-sm opacity-70">
               Wind: {Math.round(weather.windspeed)} km/h
             </p>
             <p className="text-xs mt-1">{formatLocalTime(weather.time)}</p>
+
+            {/* AI Chat — ask questions about current weather */}
+            <div className="mt-4">
+              <WeatherChat place={place} weather={weather} />
+            </div>
+
+           
           </div>
         )}
       </div>
